@@ -139,7 +139,7 @@ describe("Given I am connected as an employee", () => {
 });
 
 
-// Integration Test for GET
+// Integration Test for GET Bills
 describe("Given I am a user connected as Employee", () => {
 	describe("When I navigate on Bill", () => {
 		beforeEach(() => {
