@@ -19,32 +19,37 @@ export default class NewBill {
     console.log(e.target.value)
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const fileInput = this.document.querySelector(`input[data-testid="file"]`)
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length - 1]
-    if (fileName.match(/\.(jpg|jpeg|png)$/)) {  // regex pour vérifier l'extension du fichier (fix bug-3)
-    const formData = new FormData()
-    const email = JSON.parse(localStorage.getItem("user")).email
-    formData.append('file', file)
-    formData.append('email', email)
+    const fileExtension = fileName.split('.').pop()
 
-    this.store
-      .bills()
-      .create({
-        data: formData,
-        headers: {
-          noContentType: true
-        }
-      })
-      .then(({fileUrl, key}) => {
-        console.log(fileUrl)
-        this.billId = key
-        this.fileUrl = fileUrl
-        this.fileName = fileName
-      }).catch(error => console.error(error))
-  } else {
-    alert('Veuillez uploader une image du format .jpg, .jpeg ou .png')
-  }
-  }
+    //  (fix bug-3)
+    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg' && fileExtension !== 'png') {
+      alert('Veuillez uploader une image du format .jpg, .jpeg ou .png')
+      fileInput.value = '';
+      return
+    }
+
+      const formData = new FormData()
+      const email = JSON.parse(localStorage.getItem("user")).email
+      formData.append('file', file)
+      formData.append('email', email)
+      this.store
+        .bills()
+        .create({
+          data: formData,
+          headers: {
+            noContentType: true
+          }
+        })
+        .then(({fileUrl, key}) => {
+          console.log(fileUrl)
+          this.billId = key
+          this.fileUrl = fileUrl
+          this.fileName = fileName
+        }).catch(error => console.error(error))
+    }
 
 
   handleSubmit = e => {
@@ -69,6 +74,7 @@ export default class NewBill {
   }
 
   // not need to cover this function by tests
+  /* istanbul ignore next */
   updateBill = (bill) => {
     if (this.store) {
       this.store
