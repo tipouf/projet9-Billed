@@ -15,6 +15,7 @@ export default class NewBill {
     this.billId = null
     new Logout({ document, localStorage, onNavigate })
   }
+
   handleChangeFile = e => {
     console.log(e.target.value)
     e.preventDefault()
@@ -24,33 +25,21 @@ export default class NewBill {
     const fileName = filePath[filePath.length - 1]
     const fileExtension = fileName.split('.').pop()
 
+    this.isValidImage = (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png')
+
     //  (fix bug-3)
-    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg' && fileExtension !== 'png') {
+    if (!this.isValidImage) {
       alert('Veuillez uploader une image du format .jpg, .jpeg ou .png')
       fileInput.value = '';
-      return
-    }
-
+    } else {
       const formData = new FormData()
       const email = JSON.parse(localStorage.getItem("user")).email
       formData.append('file', file)
       formData.append('email', email)
-      this.store
-        .bills()
-        .create({
-          data: formData,
-          headers: {
-            noContentType: true
-          }
-        })
-        .then(({fileUrl, key}) => {
-          console.log(fileUrl)
-          this.billId = key
-          this.fileUrl = fileUrl
-          this.fileName = fileName
-        }).catch(error => console.error(error))
+      this.formData = formData
+      this.fileName = fileName
     }
-
+  }
 
   handleSubmit = e => {
     e.preventDefault()
@@ -69,9 +58,28 @@ export default class NewBill {
       fileName: this.fileName,
       status: 'pending'
     }
-    this.updateBill(bill)
-    this.onNavigate(ROUTES_PATH['Bills'])
-  }
+
+    if (this.isValidImage) {
+			this.store
+				.bills()
+				.create({
+					data: this.formData,
+					headers: {
+						noContentType: true,
+					},
+				})
+				.then(({ fileUrl, key }) => {
+					this.billId = key;
+					this.fileUrl = fileUrl;
+				})
+				.then(() => {
+					this.updateBill(bill);
+          
+				})
+				.catch((error) => console.error(error));
+		}
+
+  };
 
   // not need to cover this function by tests
   /* istanbul ignore next */
