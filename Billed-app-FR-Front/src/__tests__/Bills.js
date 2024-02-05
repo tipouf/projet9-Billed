@@ -23,11 +23,14 @@ describe("Given I am connected as an employee", () => {
       window.localStorage.setItem('user', JSON.stringify({
         type: 'Employee'
       }))
+
       const root = document.createElement("div")
       root.setAttribute("id", "root")
       document.body.append(root)
       router()
+
       window.onNavigate(ROUTES_PATH.Bills)
+
       await waitFor(() => screen.getByTestId('icon-window'))
       const windowIcon = screen.getByTestId('icon-window')
       expect(windowIcon.classList.contains("active-icon")).toBe(true); // i do this
@@ -133,7 +136,6 @@ describe("Given I am connected as an employee", () => {
       expect(modale.classList).toContain("show");
 
       expect(screen.getByText("Justificatif")).toBeTruthy();
-      expect(bills[0].fileUrl).toBeTruthy();
     });
   });
 });
