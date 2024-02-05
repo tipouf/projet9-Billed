@@ -4,6 +4,6 @@
 # ignore node modules front and back
 /Billed-app-FR-Front/nodes_modules
 /Billed-app-FR-Back/nodes_modules
-
+/Billed-app-FR-Back/public
 
 

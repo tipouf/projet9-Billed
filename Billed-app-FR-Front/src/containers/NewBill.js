@@ -15,37 +15,31 @@ export default class NewBill {
     this.billId = null
     new Logout({ document, localStorage, onNavigate })
   }
+
   handleChangeFile = e => {
     console.log(e.target.value)
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const fileInput = this.document.querySelector(`input[data-testid="file"]`)
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length - 1]
-    if (fileName.match(/\.(jpg|jpeg|png)$/)) {  // regex pour vérifier l'extension du fichier (fix bug-3)
-    const formData = new FormData()
-    const email = JSON.parse(localStorage.getItem("user")).email
-    formData.append('file', file)
-    formData.append('email', email)
+    const fileExtension = fileName.split('.').pop()
 
-    this.store
-      .bills()
-      .create({
-        data: formData,
-        headers: {
-          noContentType: true
-        }
-      })
-      .then(({fileUrl, key}) => {
-        console.log(fileUrl)
-        this.billId = key
-        this.fileUrl = fileUrl
-        this.fileName = fileName
-      }).catch(error => console.error(error))
-  } else {
-    alert('Veuillez uploader une image du format .jpg, .jpeg ou .png')
-  }
-  }
+    this.isValidImage = (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png')
 
+    //  (fix bug-3)
+    if (!this.isValidImage) {
+      alert('Veuillez uploader une image du format .jpg, .jpeg ou .png')
+      fileInput.value = '';
+    } else {
+      const formData = new FormData()
+      const email = JSON.parse(localStorage.getItem("user")).email
+      formData.append('file', file)
+      formData.append('email', email)
+      this.formData = formData
+      this.fileName = fileName
+    }
+  }
 
   handleSubmit = e => {
     e.preventDefault()
@@ -64,11 +58,31 @@ export default class NewBill {
       fileName: this.fileName,
       status: 'pending'
     }
-    this.updateBill(bill)
-    this.onNavigate(ROUTES_PATH['Bills'])
-  }
+
+    if (this.isValidImage) {
+			this.store
+				.bills()
+				.create({
+					data: this.formData,
+					headers: {
+						noContentType: true,
+					},
+				})
+				.then(({ fileUrl, key }) => {
+					this.billId = key;
+					this.fileUrl = fileUrl;
+				})
+				.then(() => {
+					this.updateBill(bill);
+          
+				})
+				.catch((error) => console.error(error));
+		}
+
+  };
 
   // not need to cover this function by tests
+  /* istanbul ignore next */
   updateBill = (bill) => {
     if (this.store) {
       this.store
